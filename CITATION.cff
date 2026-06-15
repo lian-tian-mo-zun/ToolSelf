@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Intrinsic Adaptation"
+title: "ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Emergent Adaptation"
 message: "If you use this repository, please cite the ToolSelf paper."
 type: software
 authors:
@@ -8,7 +8,7 @@ authors:
   - family-names: "Wang"
     given-names: "Sheng"
   - family-names: "Deng"
-    given-names: "DeZhao"
+    given-names: "Dezhao"
   - family-names: "Lu"
     given-names: "Junwen"
   - family-names: "Su"
@@ -23,11 +23,13 @@ authors:
     given-names: "Jiyue"
   - family-names: "Kong"
     given-names: "Lingpeng"
+  - family-names: "Jin"
+    given-names: "Dunhong"
   - family-names: "Wu"
     given-names: "Chuan"
 year: 2026
 repository-code: "https://github.com/lian-tian-mo-zun/ToolSelf"
-url: "https://arxiv.org/html/2602.07883v1"
+url: "https://arxiv.org/abs/2602.07883"
 identifiers:
   - type: doi
     value: "10.48550/arXiv.2602.07883"

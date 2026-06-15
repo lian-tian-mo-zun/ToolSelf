@@ -1,58 +1,82 @@
 <div align="center">
 
-# [ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Intrinsic Adaptation](https://arxiv.org/html/2602.07883v1)
-
-**Runtime self-reconfiguration for long-horizon, tool-use agents**
+# [ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Emergent Adaptation](https://arxiv.org/abs/2602.07883)
 
 </div>
 
 <div align="center">
-  <a href="https://arxiv.org/html/2602.07883v1"><img src="https://img.shields.io/badge/Paper-arXiv-red" alt="arXiv"></a>
+  <a href="https://arxiv.org/abs/2602.07883"><img src="https://img.shields.io/badge/Paper-arXiv-red" alt="arXiv"></a>
   <a href="https://github.com/lian-tian-mo-zun/ToolSelf"><img src="https://img.shields.io/badge/Code-GitHub-black" alt="GitHub"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/Code%20License-MIT-blue" alt="Code License"></a>
   <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-blue">
   <img alt="API" src="https://img.shields.io/badge/API-OpenAI--Compatible-green">
   <img alt="Benchmarks" src="https://img.shields.io/badge/Eval-GAIA%20%7C%20FRAMES%20%7C%20XBench-purple">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
 </div>
 
 <div align="center">
-  <a href="https://arxiv.org/html/2602.07883v1">Paper</a> •
-  <a href="#-introduction">Introduction</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-configuration">Configuration</a> •
-  <a href="#-reproducibility">Reproducibility</a> •
-  <a href="#-citation">Citation</a>
-</div>
-
-<br>
-
-<div align="center">
-  <img src="assets/toolself_overview.png" alt="ToolSelf overview" width="100%">
+<img src="./assets/toolself_overview.png" width="100%">
 </div>
 
 ## 🚀 News
 
-- **[2026-06-15]** Initial open-source release of ToolSelf code, evaluation runners, and reproducibility configs.
-- **[2026-02-08]** Paper available on arXiv: [ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Intrinsic Adaptation](https://arxiv.org/html/2602.07883v1).
+- **[6/15/2026]** We release the ToolSelf codebase, evaluation runners, reproducibility configs, and documentation.
+- **[5/31/2026]** ToolSelf v3 is available on arXiv: [arXiv:2602.07883](https://arxiv.org/abs/2602.07883).
 
 ## 💡 Introduction
 
-ToolSelf is a tool-use agent framework that unifies **task execution** and **configuration generation** in one iterative loop. Instead of fixing the agent configuration before execution, ToolSelf lets the agent update its sub-goals, strategy, toolbox, context management, and inter-stage knowledge at runtime.
+We introduce **TOOLSELF**, a tool-driven runtime self-reconfiguration paradigm for long-horizon tool-use agents. Existing agentic systems often rely on configurations fixed before execution, including sub-goals, strategies, toolboxes, context, and context-management modes. This static design creates a tension between specialization and generalization: narrow configurations provide strong task guidance but transfer poorly, while broad task-agnostic configurations cover more tasks but dilute useful priors and enlarge the action space.
 
-This repository includes:
+ToolSelf resolves this tension by treating configuration updates as a standardized tool interface. The execution agent can invoke a reconfiguration tool during task solving, summarize the current stage, and generate the next configuration based on task progress and feedback. In this way, task execution and adaptation are unified within one policy's action space rather than split across external optimizers, planners, or patching modules.
 
-- the ToolSelf benchmark runner,
-- a ReAct-style execution agent,
-- web, search, file, code-interpreter, reconfiguration, and termination tools,
-- GAIA-style evaluation scripts,
-- loaders and config templates for GAIA, GAIA(WS), FRAMES, and XBench DeepSearch-2510,
-- reproducibility notes and result summarization utilities.
+<div align="center">
+<img src="./assets/toolself_overview.png" width="90%">
+</div>
+<small><em>Overview of ToolSelf. Configuration becomes a dynamic, tool-updatable variable, enabling a single execution policy to jointly perform task solving and runtime self-reconfiguration.</em></small>
 
-> Datasets, API keys, private model endpoints, and run outputs are intentionally not included.
+### 🔧 Method Overview
+
+ToolSelf equips the execution agent with two special tools in addition to ordinary environment tools:
+
+- **Reconfiguration Tool**: updates sub-goals, execution strategies, toolboxes, task knowledge, and context-management modes.
+- **Termination Tool**: returns the final answer when the task is complete.
+
+At stage `i`, the agent operates under a configuration `C_i = (q_i, sigma_i, T_i, K_i, m_i)`, where `q_i` is the current sub-goal, `sigma_i` is the execution strategy, `T_i` is the stage-specific toolbox, `K_i` is task knowledge, and `m_i` is the context-management mode. When the current configuration no longer matches task progress, the agent invokes the reconfiguration tool to produce `C_{i+1}` and continue execution.
+
+### 🧠 Configuration-Aware Two-stage Training
+
+We further introduce **Configuration-Aware Two-stage Training (CAT)** to internalize self-reconfiguration:
+
+- **Stage I: Rejection Sampling Fine-Tuning (RFT)** uses successful teacher-generated trajectories for cold-start initialization.
+- **Stage II: Trajectory-level KTO Reinforcement Learning** optimizes reconfiguration decisions using task-level success or failure feedback.
+
+This design aligns training with the nature of self-reconfiguration: the quality of a configuration update is only revealed through downstream task completion.
+
+## 📊 Performance
+
+ToolSelf is evaluated across deep research, general AI assistance, and software engineering benchmarks.
+
+### 🌐 Strong Cross-task Generalization
+
+Zero-shot ToolSelf rivals task-specialized agents while preserving broad task coverage. By updating its own configuration during execution, ToolSelf avoids relying on manually injected task-specific workflows.
+
+### 🏆 Training Improves Runtime Adaptation
+
+After CAT training, ToolSelf gains **28.8 points** over the static-configuration baseline on average across diverse benchmarks, showing that self-reconfiguration can emerge as a learnable capability.
+
+### 🔁 Long-horizon Adaptivity
+
+Case studies show that ToolSelf can elicit advanced behaviors including long-horizon planning, self-refinement, and self-correction through its execution-reconfiguration loop.
 
 ## ⚡ Quick Start
 
-### Installation
+### 🛠️ Prerequisites
+
+- Python 3.10+
+- OpenAI-compatible chat-completions endpoint
+- Searx endpoint for web search
+- Local benchmark data for evaluation
+
+### 📥 Installation
 
 ```bash
 git clone https://github.com/lian-tian-mo-zun/ToolSelf.git
@@ -63,23 +87,96 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Environment
+### 📁 Project File Structure
 
-Create a local environment file:
+```text
+ToolSelf/
+├── config.py                         # Environment-driven model and tool config
+├── toolself_gaia.py                  # ToolSelf benchmark runner
+├── execution_agent/                  # ReAct-style execution agent
+├── tools/                            # Tool implementations
+├── run_GAIA/
+│   ├── evaluator.py                  # GAIA-style evaluator
+│   ├── run_eval.py                   # Direct evaluation entry point
+│   ├── run_eval_isolated.py          # Per-sample isolated runner
+│   └── configs/                      # Dataset config templates
+├── scripts/
+│   ├── run_eval.sh                   # Convenience runner
+│   └── summarize_results.py          # Result summary utility
+├── docs/
+│   ├── datasets.md                   # Dataset preparation notes
+│   └── reproducibility.md            # Reproducibility guide
+├── assets/                           # README figures
+├── requirements.txt
+└── .env.example
+```
+
+### ⚙️ Configuration
+
+Copy the example environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`, then load it:
+Edit `.env` with your local settings, then load it:
 
 ```bash
 source .env
 ```
 
-### Smoke Test
+#### 1️⃣ Main Agent Backend
 
-Run a small evaluation job:
+ToolSelf uses an OpenAI-compatible chat-completions endpoint for the main execution agent:
+
+```bash
+export MAIN_LLM_API_KEY="your-api-key"
+export MAIN_LLM_API_BASE_URL="https://your-endpoint/v1"
+export MAIN_LLM_MODEL="your-model-name"
+export MAIN_LLM_MAX_TOKENS="4096"
+```
+
+#### 2️⃣ Judge Backend
+
+Evaluation uses an LLM-as-judge endpoint:
+
+```bash
+export JUDGE_API_KEY="your-judge-api-key"
+export JUDGE_BASE_URL="https://your-judge-endpoint/v1"
+export JUDGE_MODEL="your-judge-model"
+```
+
+#### 3️⃣ Web and File Tools
+
+Configure search and optional webpage/file-analysis models:
+
+```bash
+export SEARX_HOST="http://localhost:8888"
+export SEARX_LANGUAGE="en-US"
+export JINA_KEY="your-jina-key"
+export JINA_READER_URL="https://r.jina.ai/"
+```
+
+Optional model groups:
+
+```bash
+export VISIT_LLM_API_KEY="${MAIN_LLM_API_KEY}"
+export VISIT_LLM_API_BASE_URL="${MAIN_LLM_API_BASE_URL}"
+export VISIT_LLM_MODEL="${MAIN_LLM_MODEL}"
+
+export FILE_ANALYZER_API_KEY="${MAIN_LLM_API_KEY}"
+export FILE_ANALYZER_API_BASE_URL="${MAIN_LLM_API_BASE_URL}"
+export FILE_ANALYZER_TEXT_MODEL="your-text-model"
+export FILE_ANALYZER_VISION_MODEL="your-vision-model"
+```
+
+#### 4️⃣ Runtime Limits
+
+```bash
+export MAX_LLM_CALL_PER_RUN="200"
+```
+
+### 🧪 Running a Smoke Test
 
 ```bash
 scripts/run_eval.sh \
@@ -95,52 +192,15 @@ Summarize a completed run:
 python scripts/summarize_results.py outputs/gaia
 ```
 
-## ⚙️ Configuration
+## 🗂️ Dataset Preparation
 
-ToolSelf reads model, web, and dataset settings from environment variables. The repository provides `.env.example` as a template.
+This repository provides loaders and config templates, but does not redistribute benchmark data.
 
-| Variable | Required | Purpose |
-|---|---:|---|
-| `MAIN_LLM_API_KEY` | Yes | API key for the main ToolSelf agent |
-| `MAIN_LLM_API_BASE_URL` | Yes | OpenAI-compatible API base URL |
-| `MAIN_LLM_MODEL` | Yes | Main model name |
-| `JUDGE_API_KEY` | Yes | API key for the LLM-as-judge |
-| `JUDGE_BASE_URL` | Yes | Judge API base URL |
-| `JUDGE_MODEL` | Yes | Judge model name |
-| `SEARX_HOST` | Yes | Searx search endpoint |
-| `DATA_ROOT` | Yes | Root directory for local benchmark files |
-| `JINA_KEY` | Optional | Jina Reader API key |
-| `JINA_READER_URL` | Optional | Jina Reader endpoint |
-| `VISIT_LLM_*` | Optional | Separate webpage-summary model config |
-| `FILE_ANALYZER_*` | Optional | Separate file-analysis model config |
-| `MAX_LLM_CALL_PER_RUN` | Optional | Per-run LLM call budget |
+Set `DATA_ROOT` to your local benchmark directory:
 
-## 📁 Project Structure
-
-```text
-ToolSelf/
-├── config.py                         # Environment-driven model/tool config
-├── toolself_gaia.py                  # ToolSelf benchmark runner
-├── execution_agent/                  # ReAct-style execution agent
-├── tools/                            # Tool implementations
-├── run_GAIA/
-│   ├── evaluator.py                  # GAIA-style evaluator
-│   ├── run_eval.py                   # Direct evaluation entry point
-│   ├── run_eval_isolated.py          # Per-sample isolated runner
-│   └── configs/                      # Dataset config templates
-├── scripts/
-│   ├── run_eval.sh                   # Convenience runner
-│   └── summarize_results.py          # Result summary utility
-├── docs/
-│   ├── datasets.md
-│   └── reproducibility.md
-├── requirements.txt
-└── .env.example
+```bash
+export DATA_ROOT="/path/to/datasets"
 ```
-
-## 🗂️ Data Preparation
-
-The repository provides loaders and config templates, but not benchmark data.
 
 Default expected layout:
 
@@ -162,9 +222,9 @@ GAIA-style JSON entries should contain:
 
 DeepSearch-2510 is loaded from the XBench CSV format. The loader decodes `prompt`, `answer`, and optional `reference_steps` with the row-level `canary` field and maps each row to the GAIA-style schema.
 
-More details: [`docs/datasets.md`](docs/datasets.md).
+More details are available in [`docs/datasets.md`](docs/datasets.md).
 
-## 🧪 Reproducibility
+## 🔬 Reproducibility
 
 Use the isolated runner for full benchmark runs. It launches each sample in a child process, so a hung tool call or network request does not block the entire job.
 
@@ -204,11 +264,11 @@ scripts/run_eval.sh \
   --sample-timeout-seconds 1800
 ```
 
-More details: [`docs/reproducibility.md`](docs/reproducibility.md).
+More details are available in [`docs/reproducibility.md`](docs/reproducibility.md).
 
 ## 📦 Outputs
 
-Each run writes an output directory with:
+Each evaluation run writes an output directory containing:
 
 ```text
 results/task_<task_id>_result.json
@@ -220,29 +280,16 @@ isolated_runs/
 
 Do not commit `.env`, datasets, output directories, workspaces, logs, or isolated run artifacts.
 
-## 🔒 Release Hygiene
-
-Before publishing or pushing updates:
-
-```bash
-rg -n "api_key|secret|token|password|PRIVATE_ENDPOINT|ABSOLUTE_LOCAL_PATH" .
-find . -type d -name "__pycache__" -prune -exec rm -rf {} +
-```
-
 ## 📌 Citation
 
 ```bibtex
-@article{toolself2026,
-  title={ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Intrinsic Adaptation},
-  author={Zhou, Jingqi and Wang, Sheng and Deng, DeZhao and Lu, Junwen and Su, Junwei and Li, Qintong and Gao, Jiahui and Wu, Hao and Jiang, Jiyue and Kong, Lingpeng and Wu, Chuan},
-  year={2026},
-  eprint={2602.07883},
-  archivePrefix={arXiv},
-  primaryClass={cs.AI}
+@article{zhou2026toolself,
+  title={ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Emergent Adaptation},
+  author={Zhou, Jingqi and Wang, Sheng and Deng, Dezhao and Lu, Junwen and Su, Junwei and Li, Qintong and Gao, Jiahui and Wu, Hao and Jiang, Jiyue and Kong, Lingpeng and Jin, Dunhong and Wu, Chuan},
+  journal={arXiv preprint arXiv:2602.07883},
+  year={2026}
 }
 ```
-
-Please cite our paper if you find ToolSelf useful for your research.
 
 ## 📄 License
 
