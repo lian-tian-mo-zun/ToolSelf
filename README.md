@@ -14,7 +14,6 @@
 </div>
 
 <div align="center">
-<img src="./assets/toolself_overview.png" width="100%">
 </div>
 
 ## 🚀 News
