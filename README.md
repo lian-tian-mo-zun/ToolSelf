@@ -2,6 +2,8 @@
 
 # [ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Emergent Adaptation](https://arxiv.org/abs/2602.07883)
 
+### Build agents that can reconfigure themselves while solving the task.
+
 </div>
 
 <div align="center">
@@ -13,10 +15,40 @@
   <img alt="Benchmarks" src="https://img.shields.io/badge/Eval-GAIA%20%7C%20FRAMES%20%7C%20XBench-purple">
 </div>
 
+<p align="center">
+  <a href="#-why-toolself">Why ToolSelf?</a> ·
+  <a href="#-introduction">Introduction</a> ·
+  <a href="#-method-overview">Method</a> ·
+  <a href="#-quick-start">Quick Start</a> ·
+  <a href="#-reproducibility">Reproducibility</a> ·
+  <a href="#-citation">Citation</a>
+</p>
+
 ## 🚀 News
 
 - **[6/15/2026]** We release the ToolSelf codebase, evaluation runners, reproducibility configs, and documentation.
 - **[5/31/2026]** ToolSelf v3 is available on arXiv: [arXiv:2602.07883](https://arxiv.org/abs/2602.07883).
+
+## ✨ Why ToolSelf?
+
+Most agent frameworks give an LLM tools. ToolSelf gives the agent a tool for changing how it uses tools.
+
+- **Self-reconfiguring execution**: update sub-goals, strategies, toolboxes, knowledge, and context mode at runtime.
+- **One policy, one action space**: task execution and adaptation happen inside the same agent loop, avoiding planner-worker handoff loss.
+- **Tool-native adaptation**: reconfiguration is represented as a standard tool call, so it can be traced, evaluated, and optimized like any other action.
+- **Built for long-horizon tasks**: designed for deep research, general AI assistance, and software engineering workflows where static prompts and fixed toolsets often break down.
+- **Reproducible evaluation stack**: includes GAIA-style runners, isolated per-sample execution, dataset config templates, and result summarization utilities.
+
+## 🧰 What You Get
+
+| Component | What it does |
+|---|---|
+| `execution_agent/` | ReAct-style execution agent with runtime reconfiguration support |
+| `tools/` | Search, browse, file analysis, code interpreter, bash, editor, reconfiguration, and termination tools |
+| `run_GAIA/` | GAIA-style evaluation runners and LLM-as-judge evaluator |
+| `run_GAIA/configs/` | Templates for GAIA, GAIA(WS), FRAMES, and XBench DeepSearch-2510 |
+| `scripts/` | Evaluation launcher and result summarization utility |
+| `docs/` | Dataset and reproducibility notes |
 
 ## 💡 Introduction
 
@@ -46,6 +78,17 @@ We further introduce **Configuration-Aware Two-stage Training (CAT)** to interna
 - **Stage II: Trajectory-level KTO Reinforcement Learning** optimizes reconfiguration decisions using task-level success or failure feedback.
 
 This design aligns training with the nature of self-reconfiguration: the quality of a configuration update is only revealed through downstream task completion.
+
+## 🧭 How ToolSelf Differs
+
+ToolSelf is not another role-orchestration wrapper or static workflow template. It targets a different layer of the agent stack: **the agent's ability to rewrite its own execution configuration while the task is unfolding**.
+
+| Compared with | Typical pattern | ToolSelf's angle |
+|---|---|---|
+| AutoGPT-style autonomous agents | Repeated plan-act-observe loops | Adds explicit runtime configuration updates as tool actions |
+| OpenHands / SWE-agent-style coding agents | Strong environment tools for software tasks | Generalizes the execution-reconfiguration loop beyond one task domain |
+| crewAI / MetaGPT-style multi-agent systems | Predefined roles, crews, SOPs, or workflows | Lets a single policy adapt sub-goals, strategy, tools, and context during execution |
+| LangGraph / AutoGen-style frameworks | Flexible orchestration primitives | Provides a concrete research implementation and evaluation setup for self-reconfiguration |
 
 ## 📊 Performance
 
