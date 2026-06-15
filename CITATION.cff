@@ -1,7 +1,33 @@
 cff-version: 1.2.0
-title: "ToolSelf: Unifying Task Execution and Configuration Generation for Tool-Use Agents"
+title: "ToolSelf: Unifying Task Execution and Self-Reconfiguration via Tool-Driven Intrinsic Adaptation"
 message: "If you use this repository, please cite the ToolSelf paper."
 type: software
 authors:
-  - name: "Anonymous Authors"
+  - family-names: "Zhou"
+    given-names: "Jingqi"
+  - family-names: "Wang"
+    given-names: "Sheng"
+  - family-names: "Deng"
+    given-names: "DeZhao"
+  - family-names: "Lu"
+    given-names: "Junwen"
+  - family-names: "Su"
+    given-names: "Junwei"
+  - family-names: "Li"
+    given-names: "Qintong"
+  - family-names: "Gao"
+    given-names: "Jiahui"
+  - family-names: "Wu"
+    given-names: "Hao"
+  - family-names: "Jiang"
+    given-names: "Jiyue"
+  - family-names: "Kong"
+    given-names: "Lingpeng"
+  - family-names: "Wu"
+    given-names: "Chuan"
 year: 2026
+repository-code: "https://github.com/lian-tian-mo-zun/ToolSelf"
+url: "https://arxiv.org/html/2602.07883v1"
+identifiers:
+  - type: doi
+    value: "10.48550/arXiv.2602.07883"
