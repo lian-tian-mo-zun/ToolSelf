@@ -1,0 +1,26 @@
+{
+  "dataset_path": "${DATA_ROOT}/DeepSearch-2510.csv",
+  "output_dir": "outputs/deepsearch_2510",
+  "max_samples": null,
+  "max_iterations": 30,
+  "max_parallel_workers": 4,
+  "max_retries": 1,
+  "verbose": true,
+  "resume_from_checkpoint": true,
+  "function_list": [
+    "visit",
+    "code_interpreter",
+    "execute_bash",
+    "str_replace_editor",
+    "search",
+    "file_analyzer",
+    "terminate",
+    "reconfigure"
+  ],
+  "agent_api_key": null,
+  "agent_base_url": null,
+  "agent_model": null,
+  "judge_api_key": null,
+  "judge_base_url": null,
+  "judge_model": null
+}

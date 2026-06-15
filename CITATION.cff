@@ -1,0 +1,7 @@
+cff-version: 1.2.0
+title: "ToolSelf: Unifying Task Execution and Configuration Generation for Tool-Use Agents"
+message: "If you use this repository, please cite the ToolSelf paper."
+type: software
+authors:
+  - name: "Anonymous Authors"
+year: 2026
