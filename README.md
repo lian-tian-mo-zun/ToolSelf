@@ -13,9 +13,6 @@
   <img alt="Benchmarks" src="https://img.shields.io/badge/Eval-GAIA%20%7C%20FRAMES%20%7C%20XBench-purple">
 </div>
 
-<div align="center">
-</div>
-
 ## 🚀 News
 
 - **[6/15/2026]** We release the ToolSelf codebase, evaluation runners, reproducibility configs, and documentation.
