@@ -20,6 +20,7 @@
   <a href="#-introduction">Introduction</a> ·
   <a href="#-method-overview">Method</a> ·
   <a href="#-quick-start">Quick Start</a> ·
+  <a href="#dataset-preparation">Datasets</a> ·
   <a href="#-reproducibility">Reproducibility</a> ·
   <a href="#-citation">Citation</a>
 </p>
@@ -215,7 +216,9 @@ export FILE_ANALYZER_VISION_MODEL="your-vision-model"
 export MAX_LLM_CALL_PER_RUN="200"
 ```
 
-### 🧪 Running a Smoke Test
+### 🧪 Run a Prepared Dataset
+
+After preparing `DATA_ROOT` as described below, run a small two-sample check:
 
 ```bash
 scripts/run_eval.sh \
@@ -231,14 +234,26 @@ Summarize a completed run:
 python scripts/summarize_results.py outputs/gaia
 ```
 
+<a id="dataset-preparation"></a>
+
 ## 🗂️ Dataset Preparation
 
-This repository provides loaders and config templates, but does not redistribute benchmark data.
+This repository provides loaders and config templates, but does **not** redistribute benchmark data. Download the datasets from their official sources, convert them into the local schema below, and keep them outside git.
+
+| Benchmark | Official source | Local file expected by the example config |
+|---|---|---|
+| GAIA | [gaia-benchmark/GAIA](https://huggingface.co/datasets/gaia-benchmark/GAIA) | `${DATA_ROOT}/GAIA.json` |
+| GAIA(WS) | [gaia-benchmark/GAIA](https://huggingface.co/datasets/gaia-benchmark/GAIA) | `${DATA_ROOT}/GAIA(WS).json` |
+| FRAMES | [google/frames-benchmark](https://huggingface.co/datasets/google/frames-benchmark) | `${DATA_ROOT}/FRAMES/frames_subset_200.json` |
+| XBench DeepSearch-2510 | [xbench/DeepSearch-2510](https://huggingface.co/datasets/xbench/DeepSearch-2510), [xbench.org](https://xbench.org) | `${DATA_ROOT}/DeepSearch-2510.csv` |
+
+GAIA is access-restricted on Hugging Face. Log in first with `huggingface-cli login` or set `HF_TOKEN` in your environment before loading it.
 
 Set `DATA_ROOT` to your local benchmark directory:
 
 ```bash
 export DATA_ROOT="/path/to/datasets"
+mkdir -p "${DATA_ROOT}/FRAMES"
 ```
 
 Default expected layout:
@@ -250,7 +265,9 @@ ${DATA_ROOT}/FRAMES/frames_subset_200.json
 ${DATA_ROOT}/DeepSearch-2510.csv
 ```
 
-GAIA-style JSON entries should contain:
+### Target JSON Schema
+
+GAIA, GAIA(WS), and FRAMES should be converted into a GAIA-style JSON list:
 
 | Field | Description |
 |---|---|
@@ -259,7 +276,98 @@ GAIA-style JSON entries should contain:
 | `final_answer` | Reference answer |
 | `level` | Optional difficulty or dataset level |
 
-DeepSearch-2510 is loaded from the XBench CSV format. The loader decodes `prompt`, `answer`, and optional `reference_steps` with the row-level `canary` field and maps each row to the GAIA-style schema.
+Example:
+
+```json
+[
+  {
+    "task_id": "gaia_validation_0001",
+    "question": "Question text...",
+    "final_answer": "Reference answer...",
+    "level": "1"
+  }
+]
+```
+
+This schema is enough for text-only samples. Some GAIA tasks depend on local files or media; for those, keep the downloaded files locally and include their accessible local paths in the `question` text, or extend the runner to copy attachment fields into each task workspace.
+
+DeepSearch-2510 does not need this JSON conversion. Keep the official XBench CSV format as `DeepSearch-2510.csv`; ToolSelf decodes `prompt`, `answer`, and optional `reference_steps` with the row-level `canary` field and maps each row internally.
+
+### Convert Hugging Face Datasets
+
+Install the optional Hugging Face dataset loader:
+
+```bash
+pip install datasets
+```
+
+Use the snippet below as a starting point. Dataset column names can differ by split or version, so the helper accepts common alternatives and can be adjusted for your local copy.
+
+```bash
+python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+from datasets import load_dataset
+
+DATA_ROOT = Path(os.environ["DATA_ROOT"])
+DATA_ROOT.mkdir(parents=True, exist_ok=True)
+(DATA_ROOT / "FRAMES").mkdir(parents=True, exist_ok=True)
+
+def pick(row, *keys, default=""):
+    for key in keys:
+        if key in row and row[key] not in (None, ""):
+            return row[key]
+    return default
+
+def to_gaia_style(dataset, output_path, prefix, limit=None):
+    rows = []
+    for index, row in enumerate(dataset):
+        if limit is not None and index >= limit:
+            break
+        rows.append({
+            "task_id": str(pick(row, "task_id", "id", default=f"{prefix}_{index}")),
+            "question": str(pick(row, "question", "Question", "prompt", "Prompt")),
+            "final_answer": str(pick(row, "final_answer", "Final answer", "answer", "Answer")),
+            "level": str(pick(row, "level", "Level", default="")),
+        })
+
+    with Path(output_path).open("w", encoding="utf-8") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=2)
+    print(f"Wrote {len(rows)} samples to {output_path}")
+
+# GAIA: choose the split/config you want to evaluate.
+gaia = load_dataset("gaia-benchmark/GAIA", "2023_all", split="validation")
+to_gaia_style(gaia, DATA_ROOT / "GAIA.json", "gaia")
+
+# GAIA(WS) uses the same target schema. Save the web-search setting separately
+# if you maintain a separate split or filtered copy.
+to_gaia_style(gaia, DATA_ROOT / "GAIA(WS).json", "gaia_ws")
+
+# FRAMES: the example config evaluates a 200-sample local subset.
+frames = load_dataset("google/frames-benchmark", split="test")
+to_gaia_style(frames, DATA_ROOT / "FRAMES" / "frames_subset_200.json", "frames", limit=200)
+PY
+```
+
+Then download DeepSearch-2510 from its official source and place the encrypted CSV here:
+
+```bash
+huggingface-cli download xbench/DeepSearch-2510 DeepSearch-2510.csv \
+  --repo-type dataset \
+  --local-dir "${DATA_ROOT}"
+```
+
+Or copy a manually downloaded file:
+
+```bash
+cp /path/to/DeepSearch-2510.csv "${DATA_ROOT}/DeepSearch-2510.csv"
+```
+
+Do not upload the decrypted DeepSearch plaintext online; the runner decodes it locally during evaluation.
+
+If you use different file names or directory names, update `dataset_path` in the corresponding file under `run_GAIA/configs/`.
 
 More details are available in [`docs/datasets.md`](docs/datasets.md).
 
